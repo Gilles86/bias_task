@@ -59,6 +59,9 @@ def main(mode='anat'):
             t1w = os.path.join(dir, 'sub-{subject_}_ses-1_acq-wb_mod-t1w_mprage.nii'.format(**locals()))
             shutil.copy(t1w, os.path.join(new_dir, 'sub-{subject}_T1UNI.nii'.format(**locals())))
 
+            t1map = os.path.join(dir, 'sub-{subject_}_ses-1_acq-wb_mod-t1map_mprage.nii'.format(**locals()))
+            shutil.copy(t1map, os.path.join(new_dir, 'sub-{subject}_T1map.nii'.format(**locals())))
+
     elif mode == 'func':
         dir = '/home/raw_data/2018/subcortex/bias_task/raw/ds-02/func'
 
