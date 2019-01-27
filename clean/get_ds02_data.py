@@ -9,8 +9,9 @@ import json
 def main(mode='anat'):
     subjects = ['{:02d}'.format(s) for s in range(1,16)]
 
-    subjects.pop(2)
-    subjects.pop(2)
+    subjects.pop(3)
+
+    subjects = ['03']
 
     mapping = {'01':'005',
                '02':'025',
@@ -96,13 +97,13 @@ def main(mode='anat'):
             func = glob.glob(template)
             func = natsorted(func)
            
-            fmap_meta = {"EchoTime1": 0.0,
-                         "EchoTime2": 0.00438,
-                         "IntendedFor":[]}
+            fmap_meta = {"EchoTime1": 0.00438,
+                         "EchoTime2": 0.00538,
+                         "IntendedFor":[]} 
                          
             for ix, f in enumerate(func):
                 run = '{:02d}'.format(ix+1)
-                template = "func/sub-{subject}_task-randomdotmotion_run-{run}_bold.nii.gz".format(**locals())
+                template = "func/sub-{subject}_task-randomdotmotion_run-{run}_bold.nii".format(**locals())
 
                 shutil.copy(f, os.path.join('/home/raw_data/2018/subcortex/bias_task/sourcedata/ds-02/', 
                                             'sub-{subject}', template).format(**locals()))
