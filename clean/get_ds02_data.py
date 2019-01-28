@@ -11,7 +11,7 @@ def main(mode='anat'):
 
     subjects.pop(3)
 
-    subjects = ['03']
+    #subjects = ['03']
 
     mapping = {'01':'005',
                '02':'025',
@@ -88,8 +88,8 @@ def main(mode='anat'):
             magnitude = image.index_img(B0, 0)
             phase = image.index_img(B0, 1)
 
-            magnitude.to_filename('/home/raw_data/2018/subcortex/bias_task/sourcedata/ds-02/sub-{subject}/fmap/sub-{subject}_magnitude1.nii'.format(**locals()))
-            phase.to_filename('/home/raw_data/2018/subcortex/bias_task/sourcedata/ds-02/sub-{subject}/fmap/sub-{subject}_phasediff.nii'.format(**locals()))
+            magnitude.to_filename('/home/raw_data/2018/subcortex/bias_task/sourcedata/ds-02/sub-{subject}/fmap/sub-{subject}_magnitude.nii'.format(**locals()))
+            phase.to_filename('/home/raw_data/2018/subcortex/bias_task/sourcedata/ds-02/sub-{subject}/fmap/sub-{subject}_fieldmap.nii'.format(**locals()))
 
 
             # FUNCTIONAL
@@ -97,8 +97,7 @@ def main(mode='anat'):
             func = glob.glob(template)
             func = natsorted(func)
            
-            fmap_meta = {"EchoTime1": 0.00438,
-                         "EchoTime2": 0.00538,
+            fmap_meta = {"Units":"Hz",
                          "IntendedFor":[]} 
                          
             for ix, f in enumerate(func):
@@ -110,7 +109,7 @@ def main(mode='anat'):
 
                 fmap_meta['IntendedFor'].append(template)
             
-            json_file = '/home/raw_data/2018/subcortex/bias_task/sourcedata/ds-02/sub-{subject}/fmap/sub-{subject}_phasediff.json'.format(**locals())
+            json_file = '/home/raw_data/2018/subcortex/bias_task/sourcedata/ds-02/sub-{subject}/fmap/sub-{subject}_fieldmap.json'.format(**locals())
 
             with open(json_file, 'w') as outfile:
                 json.dump(fmap_meta, outfile)
