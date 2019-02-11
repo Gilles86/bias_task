@@ -8,10 +8,15 @@ import json
 from nipype.utils.filemanip import split_filename
 
 def main(ds):
+
+
     if ds == 'ds-02':
         subjects = ['{:02d}'.format(s) for s in range(1,16)]
 
         subjects.pop(3)
+    elif ds == 'ds-01':
+        subjects = ['{:02d}'.format(s) for s in range(1,20)]
+
 
     print(subjects)
 
@@ -41,7 +46,10 @@ def main(ds):
 
             im = image.load_img(fn)
             d, fn = os.path.split(fn)
-            im.header.set_xyzt_units(t=8)
+            if ds == 'ds-02':
+                im.header.set_xyzt_units(t=8)
+            else:
+                im.header.set_xyzt_units(t=16)
             print(fn)
             im.to_filename(os.path.join(new_func_dir, fn))
 
