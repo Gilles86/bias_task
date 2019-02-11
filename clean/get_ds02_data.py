@@ -11,7 +11,7 @@ def main(mode='anat'):
 
     subjects.pop(3)
 
-    #subjects = ['03']
+    subjects = ['03']
 
     mapping = {'01':'005',
                '02':'025',
@@ -32,6 +32,11 @@ def main(mode='anat'):
 
     if mode == 'anat':
         for subject in subjects:
+            if subject == '03':
+                session = '2'
+            else:
+                session = '1'
+
             subject_ = mapping[subject]
 
             dir = '/home/raw_data/2018/subcortex/bias_task/raw/ds-02/anat/sub-{subject}/ses-1/anat/wb/source/'.format(**locals())
@@ -41,8 +46,8 @@ def main(mode='anat'):
                 os.makedirs(new_dir)
 
 
-            inv1 = os.path.join(dir, 'sub-{subject_}_ses-1_acq-wb_inv-1_part-mag_mprage.nii'.format(**locals()))
-            inv1_ph = os.path.join(dir, 'sub-{subject_}_ses-1_acq-wb_inv-1_part-ph_mprage.nii'.format(**locals()))
+            inv1 = os.path.join(dir, 'sub-{subject_}_ses-{session}_acq-wb_inv-1_part-mag_mprage.nii'.format(**locals()))
+            inv1_ph = os.path.join(dir, 'sub-{subject_}_ses-{session}_acq-wb_inv-1_part-ph_mprage.nii'.format(**locals()))
 
             shutil.copy(inv1, os.path.join(new_dir, 'sub-{subject}_inv-1_part-mag_MP2RAGE.nii'.format(**locals())))
             shutil.copy(inv1, os.path.join(new_dir, 'sub-{subject}_inv-1_part-phase_MP2RAGE.nii'.format(**locals())))
@@ -51,16 +56,16 @@ def main(mode='anat'):
             inv2_ph = []
 
             for echo in range(1,5):
-                inv2.append(os.path.join(dir, 'sub-{subject_}_ses-1_acq-wb_inv-2_echo-{echo}_part-mag_mprage.nii'.format(**locals())))
-                inv2_ph.append(os.path.join(dir, 'sub-{subject_}_ses-1_acq-wb_inv-2_echo-{echo}_part-ph_mprage.nii'.format(**locals())))
+                inv2.append(os.path.join(dir, 'sub-{subject_}_ses-{session}_acq-wb_inv-2_echo-{echo}_part-mag_mprage.nii'.format(**locals())))
+                inv2_ph.append(os.path.join(dir, 'sub-{subject_}_ses-{session}_acq-wb_inv-2_echo-{echo}_part-ph_mprage.nii'.format(**locals())))
 
                 shutil.copy(inv2[-1], os.path.join(new_dir, 'sub-{subject}_inv-2_echo-{echo}_part-mag_MP2RAGE.nii'.format(**locals())))
                 shutil.copy(inv2_ph[-1], os.path.join(new_dir, 'sub-{subject}_inv-2_echo-{echo}_part-phase_MP2RAGE.nii'.format(**locals())))
 
-            t1w = os.path.join(dir, 'sub-{subject_}_ses-1_acq-wb_mod-t1w_mprage.nii'.format(**locals()))
+            t1w = os.path.join(dir, 'sub-{subject_}_ses-{session}_acq-wb_mod-t1w_mprage.nii'.format(**locals()))
             shutil.copy(t1w, os.path.join(new_dir, 'sub-{subject}_T1UNI.nii'.format(**locals())))
 
-            t1map = os.path.join(dir, 'sub-{subject_}_ses-1_acq-wb_mod-t1map_mprage.nii'.format(**locals()))
+            t1map = os.path.join(dir, 'sub-{subject_}_ses-{session}_acq-wb_mod-t1map_mprage.nii'.format(**locals()))
             shutil.copy(t1map, os.path.join(new_dir, 'sub-{subject}_T1map.nii'.format(**locals())))
 
     elif mode == 'func':
