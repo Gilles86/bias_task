@@ -1,4 +1,5 @@
 import os.path as op
+import os
 from nipype.interfaces import ants
 from nipype.interfaces import fsl
 from nipype.interfaces import io as nio
@@ -80,7 +81,7 @@ def main(derivatives_dir,
                              iterfield=['input_image', 'transforms'],
                              name='transformer')
 
-    wf.config = { "execution": { "crashdump_dir": op.abspath('~/crashdumps') }}
+    wf.config = { "execution": { "crashdump_dir": op.join(os.environ['HOME'], 'crashdumps') }}
     
     wf.connect(reorient_mask, 'reoriented_image', transformer, 'input_image')
     wf.connect(selector, 'transform', transformer, 'transforms')
