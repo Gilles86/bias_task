@@ -10,6 +10,7 @@ def main(raw_dir,
     subjects = ['{:02d}'.format(s) for s in range(1,16)]
 
     subjects.pop(3)
+    subjects = ['10']
 
     mapping = {'01':'005',
                '02':'025',
@@ -30,6 +31,7 @@ def main(raw_dir,
     
     masks = ['stn', 'sn', 'rn']
     hemispheres = ['l', 'r']
+    masks = ['stn']
 
 
     for subject, mask, hemi in product(subjects, masks, hemispheres):
@@ -42,7 +44,7 @@ def main(raw_dir,
 
         new_fn = op.join(new_dir, 'sub-{subject}_desc-{mask}{hemi}_mask.nii.gz').format(**locals())
 
-        for rater in ['aaxbkx', 'aaxbix', 'aaxlfx', 'aaxgjgx', 'aaxmmx']:
+        for rater in ['aaxbkx', 'aaxbix', 'aaxlfx', 'aaxgjgx', 'aaxmmx', 'aaxbos', 'aaxgdh']:
             old_fn = op.join(raw_dir,
                              'anat',
                              'sub-{subject}',
