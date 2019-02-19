@@ -16,7 +16,10 @@ sourcedata = '/home/raw_data/2018/subcortex/bias_task/sourcedata/ds-01/'
 flash_templates = {'FLASH':op.join(sourcedata, 'sub-{subject}', 'anat', 'sub-{subject}_echo-{echo}_FLASH.nii.gz'),}
 t1w_templates = {'T1w':op.join(derivatives, 'fmriprep', 'sub-{subject}', 'anat',
                                'sub-{subject}_desc-preproc_T1w.nii.gz'),
-                 'aseg':op.join(derivatives, 'fmriprep', 'sub-{subject}', 'anat', 'sub-{subject}_desc-aseg_dseg.nii.gz')}
+                 'aseg':op.join(derivatives, 'fmriprep', 'sub-{subject}', 'anat',
+                                'sub-{subject}_desc-aseg_dseg.nii.gz'),
+                 'bold':op.join(derivatives, 'fmriprep', 'sub-{subject}', 'func',
+                                'sub-{subject}_task-randomdotmotion_run-01_space-T1w_boldref.nii.gz')}
 mask_templates = {'mask':op.join(derivatives, 'conjunct_masks', 'sub-{subject}', 'anat',
                               'sub-{subject}_space-FLASH_desc-{mask}_mask.nii.gz')}
 
@@ -26,7 +29,6 @@ wf = pe.Workflow(name='transform_masks',
 inputnode = pe.Node(niu.IdentityInterface(fields=['subject']),
                     name='inputnode')
 inputnode.iterables = [('subject', ['{:02d}'.format(i) for i in range(1, 20)])]
-#inputnode.iterables = [('subject', ['{:02d}'.format(i) for i in range(1, 2)])]
 
 flash_selector = pe.MapNode(nio.SelectFiles(flash_templates),
                       iterfield=['echo'],
@@ -58,12 +60,13 @@ n4_correct = pe.Node(ants.N4BiasFieldCorrection(),
 wf.connect(meaner, 'out_file', n4_correct, 'input_image')
 
 
-reg = pe.Node(FLIRTRPT(generate_report=True, cost_func='mutualinfo',dof=6),
+reg = pe.Node(FLIRTRPT(generate_report=True, cost_func='normcorr',dof=12),
 	        	name='flirt')
 #reg.inputs.schedule = op.join(os.getenv('FSLDIR'), 'etc/flirtsch/bbr.sch')
 
 wf.connect(n4_correct, 'output_image', reg, 'in_file')
-wf.connect(t1w_selector, 'T1w', reg, 'reference')
+#wf.connect(t1w_selector, 'T1w', reg, 'reference')
+wf.connect(t1w_selector, 'bold', reg, 'reference')
 #wf.connect(get_wm, 'wm', reg, 'wm_seg')
 
 convert_fsl_to_ants = pe.Node(C3dAffineTool(), name='convert_fsl_to_ants_t1_to_epi')
@@ -72,7 +75,7 @@ convert_fsl_to_ants.inputs.itk_transform = True
 
 wf.connect(reg, 'out_matrix_file', convert_fsl_to_ants, 'transform_file')
 wf.connect(n4_correct, 'output_image', convert_fsl_to_ants, 'source_file')
-wf.connect(t1w_selector, 'T1w', convert_fsl_to_ants, 'reference_file')
+wf.connect(t1w_selector, 'bold', convert_fsl_to_ants, 'reference_file')
 
 ds_registration = pe.Node(bids.DerivativesDataSink(base_directory=derivatives,
 												   out_path_base='FLASH_to_T1w'),
