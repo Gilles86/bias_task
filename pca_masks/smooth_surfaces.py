@@ -73,7 +73,8 @@ def smooth_surf_wf(name,
     wf.connect(input_node, 'hemispheres', smoother, 'hemi')
 
     ds = pe.MapNode(bids.DerivativesDataSink(desc='smoothed',
-                                             base_directory=op.join(derivatives_dir, 'smoothed_surfaces')),
+                                             out_path_base='smoothed_surfaces',
+                                             base_directory=op.join(derivatives_dir)),
                     iterfield=['source_file',
                                'in_file',
                                'extra_values'],
