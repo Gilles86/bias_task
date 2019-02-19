@@ -8,7 +8,8 @@ include = [u'dvars',u'framewise_displacement', u'a_comp_cor_00', u'a_comp_cor_01
 def main(derivatives,
          ds='ds-02'):
     subjects = ['{:02d}'.format(i) for i in range(1, 16)]
-    subjects.pop(3)
+    subjects.pop(0) # 1
+    subjects.pop(2) # 4
 
 
     mask_l = op.join(derivatives, 
@@ -20,8 +21,8 @@ def main(derivatives,
                    'mean_mask_mni_space/_mask_stnr',
                    'sub-01_desc-stnr_mask_resampled_trans_merged_mean.nii.gz')
 
-    mask_l = image.math_img('mask > 0.5', mask=mask_l)
-    mask_r = image.math_img('mask > 0.5', mask=mask_r)
+    mask_l = image.math_img('mask > 0.3', mask=mask_l)
+    mask_r = image.math_img('mask > 0.3', mask=mask_r)
 
     #mask = image.load_img(mask)
     masker_l = input_data.NiftiMasker(mask_l, detrend=True, standardize=True)
@@ -43,10 +44,10 @@ def main(derivatives,
         for run in range(1, n_runs+1):
             lh = surface.load_surf_data(op.join(derivatives,
                         ds,
-                        'fmriprep/sub-{subject}/func/sub-{subject}_task-randomdotmotion_run-{run:02d}_space-fsaverage_hemi-L.func.gii'.format(**locals()))).T
+                        'smoothed_surfaces/sub-{subject}/func/sub-{subject}_task-randomdotmotion_run-{run:02d}_space-fsaverage_desc-smoothed_hemi-lh.gii'.format(**locals()))).T
             rh = surface.load_surf_data(op.join(derivatives,
                         ds,
-                        'fmriprep/sub-{subject}/func/sub-{subject}_task-randomdotmotion_run-{run:02d}_space-fsaverage_hemi-R.func.gii'.format(**locals()))).T
+                        'smoothed_surfaces/sub-{subject}/func/sub-{subject}_task-randomdotmotion_run-{run:02d}_space-fsaverage_desc-smoothed_hemi-rh.gii'.format(**locals()))).T
 
 
             confounds = pd.read_table(op.join(derivatives, ds, 'fmriprep/sub-{subject}/func/sub-{subject}_task-randomdotmotion_run-{run:02d}_desc-confounds_regressors.tsv'.format(**locals())))
@@ -72,11 +73,11 @@ def main(derivatives,
         rs_l = np.array([data_stn_l[i].T.dot(surfs[i]) / data_stn_l.shape[1] for i in range(n_runs)])
         rs_r = np.array([data_stn_r[i].T.dot(surfs[i]) / data_stn_r.shape[1] for i in range(n_runs)])
 
-        np.savez_compressed(op.join(derivatives, ds, 'zooi', 'sub-{subject}_surfs.npz'.format(**locals())), surfs)
-        np.savez_compressed(op.join(derivatives, ds, 'zooi', 'sub-{subject}_stn_l.npz'.format(**locals())), data_stn_l)
-        np.savez_compressed(op.join(derivatives, ds, 'zooi', 'sub-{subject}_stn_r.npz'.format(**locals())), data_stn_r)
-        np.savez_compressed(op.join(derivatives, ds, 'zooi', 'sub-{subject}_rs_l.npz'.format(**locals())), rs_l)
-        np.savez_compressed(op.join(derivatives, ds, 'zooi', 'sub-{subject}_rs_r.npz'.format(**locals())), rs_r)
+        np.savez_compressed(op.join(derivatives, ds, 'surface_correlations', 'sub-{subject}_surfs.npz'.format(**locals())), surfs)
+        np.savez_compressed(op.join(derivatives, ds, 'surface_correlations', 'sub-{subject}_stn_l.npz'.format(**locals())), data_stn_l)
+        np.savez_compressed(op.join(derivatives, ds, 'surface_correlations', 'sub-{subject}_stn_r.npz'.format(**locals())), data_stn_r)
+        np.savez_compressed(op.join(derivatives, ds, 'surface_correlations', 'sub-{subject}_rs_l.npz'.format(**locals())), rs_l)
+        np.savez_compressed(op.join(derivatives, ds, 'surface_correlations', 'sub-{subject}_rs_r.npz'.format(**locals())), rs_r)
 
 
 if __name__ == '__main__':
