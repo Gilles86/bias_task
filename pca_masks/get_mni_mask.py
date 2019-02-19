@@ -1,5 +1,6 @@
 import os.path as op
 import os
+import nipype
 from nipype.interfaces import ants
 from nipype.interfaces import fsl
 from nipype.interfaces import io as nio
