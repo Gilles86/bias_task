@@ -62,7 +62,9 @@ def main(mode='anat'):
 
                 echo = ix+1
 
-                old_fn = os.path.join('/home/raw_data/2018/subcortex/bias_task/raw/ds-01/anat/FLASH', 'sub-{subject}_FLASH_echo_{te}.nii.gz'.format(**locals()))
+                #old_fn = os.path.join('/home/raw_data/2018/subcortex/bias_task/raw/ds-01/anat/FLASH', 'sub-{subject}_FLASH_echo_{te}.nii.gz'.format(**locals()))
+                old_fn = os.path.join('/home/raw_data/2018/subcortex/bias_task/raw/ds-01/structural_2std/{subject_}/FLASH_magnitude',
+                             'e{te}.nii.gz').format(**locals())
                 print(old_fn, os.path.exists(old_fn))
 
                 new_fn = os.path.join(new_dir, 'sub-{subject}_echo-{echo}_FLASH.nii.gz'.format(**locals()))
