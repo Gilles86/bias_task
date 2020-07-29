@@ -25,25 +25,28 @@ def main(derivatives, ds):
 
         d = pd.read_table(('/home/raw_data/2018/subcortex/bias_task/raw/{ds}/behavior/'+fn_template).format(**locals()), sep=',')
 
+
         for run, d_ in d.groupby('block'):
             print(subject, run)
             run  = '{:02d}'.format(run)
-            tmp1 = d[['difficulty', 'onset_stim']].copy().rename(columns={'onset_stim':'onset', 
+            tmp1 = d_[['difficulty', 'onset_stim']].copy().rename(columns={'onset_stim':'onset', 
                                                                          'difficulty':'trial_type'})
 
-            tmp2 = d.loc[d.correct == 0, ['onset_stim']].copy().rename(columns={'onset_stim':'onset'}) 
+            tmp2 = d_.loc[d.correct == 0, ['onset_stim']].copy().rename(columns={'onset_stim':'onset'}) 
             tmp2['trial_type'] = 'error'
 
-            tmp3 = d[['cue', 'onset_cue']].copy().rename(columns={'onset_cue':'onset', 
+            tmp3 = d_[['cue', 'onset_cue']].copy().rename(columns={'onset_cue':'onset', 
                                                                   'cue':'trial_type'})
             tmp3['trial_type'] = tmp3.trial_type.apply(lambda x: 'cue_{}'.format(x))
 
-            tmp4 = d[['response', 'onset_stim']].copy().rename(columns={'onset_stim':'onset', 
+            tmp4 = d_[['response', 'onset_stim']].copy().rename(columns={'onset_stim':'onset', 
                                                                         'response':'trial_type'})
             tmp4 = tmp4[tmp4.trial_type != -1]
             tmp4['trial_type'] = tmp4.trial_type.map({1:'response_left', 2:'response_right'})
 
             tmp = pd.concat((tmp1, tmp2, tmp3, tmp4))
+
+            tmp['onset'] -= 3.0 # Slice-time correction and off-by-one-error in script
 
             tmp.to_csv(op.join(derivatives, ds, 'event_files',
                                    'sub-{subject}_task-randomdotmotion_run-{run}_events.tsv').format(**locals()),

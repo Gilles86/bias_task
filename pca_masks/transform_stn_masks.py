@@ -29,6 +29,7 @@ wf = pe.Workflow(name='transform_masks',
 inputnode = pe.Node(niu.IdentityInterface(fields=['subject']),
                     name='inputnode')
 inputnode.iterables = [('subject', ['{:02d}'.format(i) for i in range(1, 20)])]
+inputnode.iterables = [('subject', ['{:02d}'.format(i) for i in [10]])]
 
 flash_selector = pe.MapNode(nio.SelectFiles(flash_templates),
                       iterfield=['echo'],
@@ -60,7 +61,7 @@ n4_correct = pe.Node(ants.N4BiasFieldCorrection(),
 wf.connect(meaner, 'out_file', n4_correct, 'input_image')
 
 
-reg = pe.Node(FLIRTRPT(generate_report=True, cost_func='normcorr',dof=12),
+reg = pe.Node(FLIRTRPT(generate_report=True, cost_func='normcorr',dof=6), # DOF was 6 for subject 10
 	        	name='flirt')
 #reg.inputs.schedule = op.join(os.getenv('FSLDIR'), 'etc/flirtsch/bbr.sch')
 

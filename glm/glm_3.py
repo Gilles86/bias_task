@@ -5,6 +5,8 @@ from nistats.first_level_model import FirstLevelModel
 from nistats.second_level_model import SecondLevelModel
 from nipype.interfaces import fsl
 import argparse
+import os
+
 
 def main(derivatives,
          ds):
@@ -26,7 +28,6 @@ def main(derivatives,
         elif ds == 'ds-02':
             if subject == '07':
                 runs = ['{:02d}'.format(i) for i in range(1,3)]
-
 
         include = [u'dvars',u'framewise_displacement', u'a_comp_cor_00', u'a_comp_cor_01', u'a_comp_cor_02', u'a_comp_cor_03', u'a_comp_cor_04', u'a_comp_cor_05', u'cosine00', u'cosine01', u'cosine02', u'cosine03', u'cosine04', u'cosine05', u'cosine06',u'cosine07', u'cosine08', u'cosine09', u'cosine10', u'cosine11', u'cosine12', u'cosine13', u'cosine14', u'cosine15', u'trans_x', u'trans_y', u'trans_z', u'rot_x', u'rot_y', u'rot_z']
 
@@ -57,48 +58,43 @@ def main(derivatives,
                                 smoothing_fwhm=5.0,
                                 hrf_model='spm + derivative',
                                 n_jobs=10,
-                                subject_label=subject)
+                                subject_label='{}.{}'.format(ds, subject))
 
         model.fit(images, 
                   behavior,
                   confounds)
 
-        print(model.design_matrices_[0].columns)
-
-        difficulty = model.compute_contrast('hard - easy', output_type='z_score')
-        left_right_cue = model.compute_contrast('cue_left - cue_right', output_type='z_score')
-        left_right_response = model.compute_contrast('response_left - response_right', output_type='z_score')
-        error = model.compute_contrast('error', output_type='z_score')
-        cue = model.compute_contrast('cue_left + cue_right - 2 * cue_neutral')
-
-        template = op.join(derivatives, ds, 'glm', 'individual_zmaps', 'sub-{subject}_desc-{contrast}_contrast.nii.gz')
-
-        difficulty.to_filename(template.format(subject=subject, contrast='difficulty'))
-        left_right_cue.to_filename(template.format(subject=subject, contrast='left_right_cue'))
-        left_right_response.to_filename(template.format(subject=subject, contrast='left_right_response'))
-        error.to_filename(template.format(subject=subject, contrast='error'))
-        cue.to_filename(template.format(subject=subject, contrast='cue'))
-
         models.append(model)
 
     mask = fsl.Info.standard_image('MNI152_T1_2mm_brain_mask.nii.gz')
+
+    confounds = pd.read_pickle(op.join(derivatives, 'all_subjectwise_parameters.pkl'))
+    confounds = confounds[['ddm difficulty_effect', 'ddm z_cue_regressor']]
+    confounds = confounds.groupby('dataset').transform(lambda x: (x - x.mean())/ x.std())
+
+    confounds['subject_label'] = confounds.apply(lambda row: '{}.{}'.format(row.name[0], row.name[1]), 1)
+    #confounds['ds'] = confounds.index.get_level_values('dataset').map({'ds-01':0, 'ds-02':1})
+
+    confounds = confounds.reset_index(drop=True)
+
     model2 = SecondLevelModel(mask)
-
-    model2.fit(models)
-
-    difficulty = model2.compute_contrast(first_level_contrast='hard - easy', output_type='z_score')
-    left_right_cue = model2.compute_contrast(first_level_contrast='cue_left - cue_right', output_type='z_score')
-    left_right_response = model2.compute_contrast(first_level_contrast='response_left - response_right', output_type='z_score')
-    error = model2.compute_contrast(first_level_contrast='error', output_type='z_score')
-    cue = model2.compute_contrast(first_level_contrast='cue_left + cue_right - 2 * cue_neutral', output_type='z_score')
+    model2.fit(models, confounds=confounds)
 
 
-    template = op.join(derivatives, ds, 'glm', 'sub-{subject}_desc-{contrast}_contrast.nii.gz')
-    difficulty.to_filename(template.format(subject='group', contrast='difficulty'))
-    left_right_cue.to_filename(template.format(subject='group', contrast='left_right_cue'))
-    left_right_response.to_filename(template.format(subject='group', contrast='left_right_response'))
-    error.to_filename(template.format(subject='group', contrast='error'))
-    cue.to_filename(template.format(subject='group', contrast='cue'))
+    glm_dir = op.join(derivatives, ds, 'modelfitting', 'glm_3')
+
+    if not op.exists(glm_dir):
+        os.makedirs(glm_dir)
+
+    keys = ['difficulty', 'cue', 'cue_left_right', 'error']
+    first_level_contrasts = ['hard - easy', 'cue_left - cue_right', 'cue_left + cue_right - 2 * cue_neutral', 'error']
+    second_level_contrasts = ['ddm difficulty_effect', 'ddm z_cue_regressor', 'ddm z_cue_regressor', 'ddm difficulty_effect']
+
+    for key, fl, sl in zip(keys, first_level_contrasts, second_level_contrasts):
+
+        for sl_ in ['intercept', sl]:
+            contrast = model2.compute_contrast(first_level_contrast=fl, second_level_contrast=sl_, output_type='z_score')
+            contrast.to_filename(op.join(glm_dir, '{}_{}_zmap.nii.gz'.format(key, sl_)))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

@@ -1,0 +1,21 @@
+{
+    "groups": [
+        {
+            "name": "Group_00001",
+            "procs": [
+                0
+            ],
+            "total": 1
+        }
+    ],
+    "links": [],
+    "maxN": 1,
+    "nodes": [
+        {
+            "group": 1,
+            "name": "0_smooth_estimate",
+            "report": "/tmp/tmpv9m58ovv/threshold_wf_glm_5/smooth_estimate/_report/report.rst",
+            "result": "/tmp/tmpv9m58ovv/threshold_wf_glm_5/smooth_estimate/result_smooth_estimate.pklz"
+        }
+    ]
+}

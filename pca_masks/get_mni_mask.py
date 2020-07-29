@@ -6,6 +6,7 @@ from nipype.interfaces import fsl
 from nipype.interfaces import io as nio
 from nipype.interfaces import utility as niu
 import nipype.pipeline.engine as pe
+import argparse
 
 def resample_to_img(source_img,
                     target_img):
@@ -30,12 +31,20 @@ def main(derivatives_dir,
          ds,
          wf_folders):
 
-    template_mask = op.join(derivatives_dir,
-                            ds,
-                            'conjunct_masks',
-                            'sub-{subject}',
-                            'anat',
-                            'sub-{subject}_desc-{mask}_mask.nii.gz')
+    if ds == 'ds-02':
+        template_mask = op.join(derivatives_dir,
+                                ds,
+                                'conjunct_masks',
+                                'sub-{subject}',
+                                'anat',
+                                'sub-{subject}_desc-{mask}_mask.nii.gz')
+    elif ds == 'ds-01':
+        template_mask = op.join(derivatives_dir,
+                                ds,
+                                'conjunct_masks',
+                                'sub-{subject}',
+                                'anat',
+                                'sub-{subject}_space-FLASH_desc-{mask}_space-T1w.nii.gz')
 
     template_transform = op.join(derivatives_dir,
                                  ds,
@@ -59,8 +68,14 @@ def main(derivatives_dir,
                           iterfield=['subject'],
                           name='selector')
 
-    subjects = ['{:02d}'.format(i) for i in list(range(1, 16))]
-    subjects.pop(3)
+    if ds == 'ds-02':
+        subjects = ['{:02d}'.format(i) for i in list(range(1, 16))]
+        subjects.pop(3)
+        subjects.pop(0)
+    elif ds =='ds-01':
+        subjects = ['{:02d}'.format(i) for i in list(range(1, 19))]
+
+
 
     selector.inputs.subject = subjects
     selector.iterables = [('mask', ['stnl', 'stnr'])]
@@ -108,6 +123,10 @@ def main(derivatives_dir,
            plugin_args={'n_procs':4})
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('ds', type=str,)
+    args = parser.parse_args()
+
     main('/home/shared/2018/subcortex/bias_task/',
-         'ds-02',
+         args.ds,
          '/tmp/workflow_folders')
